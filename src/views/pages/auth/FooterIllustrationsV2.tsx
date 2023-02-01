@@ -40,8 +40,7 @@ const FooterIllustrationsV2 = (props: FooterIllustrationsV2Prop) => {
   if (!hidden) {
     return (
       <Fragment>
-        {image || <TreeImg alt='tree' src='/images/pages/tree.png' />}
-        <MaskImg alt='mask' src={`/images/pages/auth-v2-mask-${theme.palette.mode}.png`} />
+        {image || <TreeImg alt='tree' src='/images/pages/contabilidade.png' />}
       </Fragment>
     )
   } else {

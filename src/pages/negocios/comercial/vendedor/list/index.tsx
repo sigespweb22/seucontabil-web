@@ -201,7 +201,7 @@ const VendedorList = () => {
     const vendedorId = id
 
     axios.post(`${rotinaApiService.dispatchPrefixRoute}/dispatch-vendedores-comissoes-create-by-vendedorId/${rotinaId}`, { vendedorId: vendedorId }, config)
-    toast.success("Comissão disparada com sucesso. \nAgora você pode continuar o uso do BoxApp enquanto trabalhamos sua solicitação.")
+    toast.success("Comissão disparada com sucesso. \nAgora você pode continuar o uso do SeuContabil enquanto trabalhamos sua solicitação.")
   }
 
   const RenderButton = ({ id, status }: { id: string | undefined; status: string }) => {

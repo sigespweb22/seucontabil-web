@@ -238,7 +238,6 @@ const RegisterV2 = () => {
                   ml: 3,
                   lineHeight: 1,
                   fontWeight: 600,
-                  textTransform: 'uppercase',
                   fontSize: '1.5rem !important'
                 }}
               >

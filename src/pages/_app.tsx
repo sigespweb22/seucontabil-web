@@ -116,10 +116,10 @@ const App = (props: ExtendedAppProps) => {
     <Provider store={store}>
       <CacheProvider value={emotionCache}>
         <Head>
-          <title>{`${themeConfig.templateName} - Sistema de gestão Box Tecnologia`}</title>
+          <title>{`${themeConfig.templateName} - Sistema de gestão financeira contábil da empresa Box Tecnologia`}</title>
           <meta
             name='description'
-            content={`${themeConfig.templateName} – BoxApp – Aplicativo Box Tecnologia.`}
+            content={`${themeConfig.templateName} – SeuContabil – Aplicativo Box Tecnologia.`}
           />
           <meta name='keywords' content='Box tecnologia, Backup, Backup em nuvem, Cyber Security, ' />
           <meta name='viewport' content='initial-scale=1, width=device-width' />

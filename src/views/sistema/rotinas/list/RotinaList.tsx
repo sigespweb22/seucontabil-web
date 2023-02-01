@@ -307,7 +307,7 @@ const RotinaList = () => {
 
   const handleRotinaPlay = (row: RotinaType) => {
     axios.post(`${rotinaApiService.dispatchPrefixRoute}/${row.dispatcherRoute}/${row.id}`, {}, config)
-    toast.success(`Rotina disparada com sucesso. \nAgora você pode continuar o uso do BoxApp enquanto trabalhamos sua solicitação, e quando quiser retorne a esta tela para verificar o STATUS de EXECUÇÃO da rotina.`)
+    toast.success(`Rotina disparada com sucesso. \nAgora você pode continuar o uso do SeuContabil enquanto trabalhamos sua solicitação, e quando quiser retorne a esta tela para verificar o STATUS de EXECUÇÃO da rotina.`)
   }
 
   const RenderButton = ({ id, status }: { id: string | undefined , status: string }) => {
