@@ -31,7 +31,7 @@ const TableHeader = (props: TableHeaderProps) => {
       <TextField
         size='small'
         value={value}
-        sx={{ width: 'calc(100% - 80px)' }}
+        sx={{ width: 'calc(100% - 100px)' }}
         variant='outlined'
         placeholder={'Busca despesa pelo nome fantasia do cliente'}
         onChange={e => handleFilter(e.target.value)}
@@ -43,7 +43,7 @@ const TableHeader = (props: TableHeaderProps) => {
             onClick={toggle}
             variant='contained'
           >
-            Novo
+            + Novo
           </Button>
         </Tooltip>
       ) : (

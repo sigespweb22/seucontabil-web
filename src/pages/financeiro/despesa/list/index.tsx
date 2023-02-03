@@ -322,7 +322,7 @@ const DespesaList = () => {
       renderCell: ({ row }: CellType) => (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {ability?.can('read', 'ac-cliente-page') && (
-            <Link href={`/negocios/comercial/cliente/view/${row.id}`} passHref>
+            <Link href={`/financeiro/despesa/view/${row.id}`} passHref>
               <Tooltip title={t('View')}>
                 <IconButton>
                   <EyeOutline fontSize='small' sx={{ mr: 2 }} />
