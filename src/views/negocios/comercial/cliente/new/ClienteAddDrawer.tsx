@@ -294,7 +294,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid item xs={12} md={12} lg={12}>
             <Alert sx={{ mb: '20px' }} severity='warning'>
-              {t("To link services, products and contracts to a customer, access its editing area")}.
+              Informe o CNPJ na coluna CNPJ e faça a busca dos dados do cliente diretamente na RECEITA.
             </Alert>
           </Grid>
           <Grid>

@@ -97,3 +97,8 @@ export const formatCVC = (value: string, cardNumber: string, Payment: PaymentTyp
 
   return clearValue.slice(0, maxLength)
 }
+
+// Format number in currency
+export const formatCurrency = (currency: number) => {
+  return currency.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' })
+}
