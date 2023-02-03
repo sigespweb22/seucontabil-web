@@ -66,7 +66,7 @@ const despesaStatusObj: DespesaKeyValuePairType = {
 
 const despesaFormaPagamentoObj: DespesaKeyValuePairType = {
   AVISTA: 'success',
-  PARCELADA: 'secondary'
+  PARCELADA: 'info'
 }
 
 const despesaSistemaParcelamentoObj: DespesaKeyValuePairType = {
@@ -96,7 +96,7 @@ const RenderFormaPagamento = ({ formaPagamento }: { formaPagamento: string }) =>
     <CustomChip
       skin='light'
       size='small'
-      label={"Forma pagamento"}
+      label={formaPagamento}
       color={despesaFormaPagamentoObj[formaPagamento]}
       sx={{ textTransform: 'capitalize' }}
     />
@@ -109,7 +109,7 @@ const RenderSistemaParcelamento = ({ sistemaParcelamento }: { sistemaParcelament
     <CustomChip
       skin='light'
       size='small'
-      label={"Sistema parcelamento"}
+      label={sistemaParcelamento}
       color={despesaSistemaParcelamentoObj[sistemaParcelamento]}
       sx={{ textTransform: 'capitalize' }}
     />
@@ -134,7 +134,7 @@ const RenderStatus = ({ status }: { status: string }) => {
 
 const defaultColumns = [
   {
-    flex: 0.2,
+    flex: 0.6,
     minWidth: 30,
     field: 'nome',
     headerName: 'Nome',
@@ -164,7 +164,7 @@ const defaultColumns = [
     }
   },
   {
-    flex: 0.09,
+    flex: 0.2,
     minWidth: 50,
     field: 'formaPagamento',
     headerName: 'Forma pagamento',
@@ -173,16 +173,16 @@ const defaultColumns = [
     renderCell: ({ row }: CellType) => <RenderFormaPagamento formaPagamento={row.formaPagamento} />
   },
   {
-    flex: 0.09,
+    flex: 0.24,
     minWidth: 50,
     field: 'sistemaParcelamento',
     headerName: 'Sistema parcelamento',
     headerAlign: 'center' as const,
     align: 'center' as const,
-    renderCell: ({ row }: CellType) => <RenderSistemaParcelamento sistemaParcelamento={row.sistemaParcelado} />
+    renderCell: ({ row }: CellType) => <RenderSistemaParcelamento sistemaParcelamento={row.sistemaParcelamento} />
   },
   {
-    flex: 0.1,
+    flex: 0.17,
     minWidth: 100,
     field: 'totalParcelas',
     headerName: 'Total parcelas',
@@ -197,7 +197,7 @@ const defaultColumns = [
     }
   },
   {
-    flex: 0.1,
+    flex: 0.18,
     minWidth: 100,
     field: 'valorPrincipal',
     headerName: 'Valor principal',
@@ -206,13 +206,13 @@ const defaultColumns = [
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.valorPrincipal}
+          {formatCurrency(row.valorPrincipal)}
         </Typography>
       )
     }
   },
   {
-    flex: 0.1,
+    flex: 0.17,
     minWidth: 100,
     field: 'valorEntrada',
     headerName: 'Valor entrada',
@@ -221,13 +221,13 @@ const defaultColumns = [
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.valorEntrada}
+          {formatCurrency(row.valorEntrada)}
         </Typography>
       )
     }
   },
   {
-    flex: 0.1,
+    flex: 0.19,
     minWidth: 100,
     field: 'valorParcelado',
     headerName: 'Valor parcelado',
@@ -236,103 +236,13 @@ const defaultColumns = [
     renderCell: ({ row }: CellType) => {
       return (
         <Typography noWrap variant='body2'>
-          {row.valorParcelado}
+          {formatCurrency(row.valorParcelado)}
         </Typography>
       )
     }
   },
   {
-    flex: 0.1,
-    minWidth: 100,
-    field: 'iof',
-    headerName: 'Iof',
-    headerAlign: 'center' as const,
-    align: 'center' as const,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.iof}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 100,
-    field: 'seguro',
-    headerName: 'Seguro',
-    headerAlign: 'center' as const,
-    align: 'center' as const,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.seguro}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 100,
-    field: 'tarifa',
-    headerName: 'Tarifa',
-    headerAlign: 'center' as const,
-    align: 'center' as const,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.tarifa}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 100,
-    field: 'custoEfetivoTotalAno',
-    headerName: 'CET a.a',
-    headerAlign: 'center' as const,
-    align: 'center' as const,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.custoEfetivoTotalAno}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 100,
-    field: 'custoEfetivoTotalMes',
-    headerName: 'CET a.m',
-    headerAlign: 'center' as const,
-    align: 'center' as const,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.custoEfetivoTotalMes}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 100,
-    field: 'custoEfetivoTotalDia',
-    headerName: 'CET a.d',
-    headerAlign: 'center' as const,
-    align: 'center' as const,
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.custoEfetivoTotalDia}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.09,
+    flex: 0.14,
     minWidth: 50,
     field: 'status',
     headerName: 'Status',
@@ -353,7 +263,7 @@ const DespesaList = () => {
   const [clienteAddOpen, setClienteAddOpen] = useState<boolean>(false)
 
   const dispatch = useDispatch<AppDispatch>()
-  const store = useSelector((state: RootState) => state.cliente)
+  const store = useSelector((state: RootState) => state.despesa)
 
   useEffect(() => {
     dispatch(
@@ -402,7 +312,7 @@ const DespesaList = () => {
   const columns = [
     ...defaultColumns,
     {
-      flex: 0.1,
+      flex: 0.25,
       minWidth: 90,
       sortable: false,
       field: 'actions',

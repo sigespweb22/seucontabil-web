@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // ** Context Imports
 import { AbilityContext } from 'src/layouts/components/acl/Can'
+import { Grid } from '@mui/material';
 
 interface TableHeaderProps {
   value: string
@@ -26,24 +27,26 @@ const TableHeader = (props: TableHeaderProps) => {
   const { handleFilter, toggle, value } = props
 
   return (
-    <Box sx={{ p: 5, pb: 3, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end' }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
-        <TextField
-          size='small'
-          value={value}
-          sx={{ mr: 4, mb: 2 }}
-          placeholder={"Busca despesa"}
-          onChange={e => handleFilter(e.target.value)}
-        />
-        {ability?.can('create', 'ac-despesa-page') ? (
-          <Tooltip title={"Adicionar nova despesa"}>
-            <Button sx={{ mb: 2, ml: 2 }} onClick={toggle} variant='contained'>
-              + Novo
-            </Button>
-          </Tooltip>
-        ) : <></>}
-      </Box>
-    </Box>
+    <Grid xs={12} md={12} lg={12} sx={{ p: 5, position: 'relative' }}>
+  <TextField
+      size='small'
+      value={value}
+      sx={{ width: 'calc(100% - 80px)' }}
+      variant="outlined" 
+      placeholder={"Busca despesa pelo nome fantasia do cliente"}
+      onChange={e => handleFilter(e.target.value)}
+    />
+  {ability?.can('create', 'ac-despesa-page') ? (
+      <Tooltip title={"Adicionar nova despesa"}>
+        <Button sx={{ mr: 4, position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }} onClick={toggle} variant='contained'>
+          Novo
+        </Button>
+      </Tooltip>
+    ) : <></>}
+</Grid>
+
+
+
   )
 }
 

@@ -9,7 +9,7 @@ export type DespesaLayoutType = {
 export type DespesaType = {
   id?: string
   formaPagamento: string
-  sistemaParcelado: string
+  sistemaParcelamento: string
   totalParcelas: number
   dataOperacao: string
   valorPrincipal: number
