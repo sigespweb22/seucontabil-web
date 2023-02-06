@@ -19,8 +19,8 @@ import Grid from '@mui/material/Grid'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm, Controller } from 'react-hook-form'
-import { toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 // Import Translate
 import { useTranslation } from 'react-i18next'
@@ -37,6 +37,7 @@ import { addClientes } from 'src/store/negocios/comercial/cliente'
 
 // ** Types Imports
 import { AppDispatch } from 'src/store'
+import { ClienteType } from 'src/types/negocios/comercial/cliente/clienteTypes'
 
 // ** Axios Imports
 import axios from 'axios'
@@ -59,8 +60,8 @@ interface ClientData {
   razaoSocial: string
   inscricaoEstadual: string
   tipoPessoa: string
-  cnpj: string
-  cpf: string
+  cnpj: string | undefined
+  cpf: string | undefined
   telefonePrincipal: string
   emailPrincipal: string
   observacao: string
@@ -105,13 +106,13 @@ const defaultValues = {
   razaoSocial: '',
   inscricaoEstadual: '',
   tipoPessoa: 'JURIDICA',
-  cnpj: '',
-  cpf: '',
+  cnpj: undefined,
+  cpf: undefined,
   telefonePrincipal: '',
   emailPrincipal: '',
   observacao: '',
   dataFundacao: '0001-01-01 00:00:00',
-  codigoMunicipio: '',
+  codigoMunicipio: 0,
   rua: '',
   numero: '',
   complemento: '',
@@ -142,7 +143,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
 
   useEffect(() => {
     const tiposPessoaRequest = axios.get(enumApiService.tiposPessoaListAsync, config)
-    
+
     tiposPessoaRequest
       .then(response => {
         if (response.status == 200) setTiposPessoa(response.data)
@@ -164,7 +165,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
           })
         }
       })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const dispatch = useDispatch<AppDispatch>()
@@ -222,7 +223,9 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
         )
         setValue(
           'telefonePrincipal',
-          response.data.phones.length >= 1 ? `${response.data.phones[0].area}${response.data.phones[0].number}` : defaultValues.telefonePrincipal
+          response.data.phones.length >= 1
+            ? `${response.data.phones[0].area}${response.data.phones[0].number}`
+            : defaultValues.telefonePrincipal
         )
         setValue(
           'emailPrincipal',
@@ -294,7 +297,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid item xs={12} md={12} lg={12}>
             <Alert sx={{ mb: '20px' }} severity='warning'>
-              Informe o CNPJ na coluna CNPJ e faça a busca dos dados do cliente diretamente na RECEITA.
+              Informe os dados no campo CNPJ e faça a busca das informações do cliente diretamente da RECEITA.
             </Alert>
           </Grid>
           <Grid>
@@ -311,7 +314,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
                         onChange(newValue), onChangeIsTipoPessoa(newValue)
                       }}
                       id='autocomplete-controlled'
-                      renderInput={params => <TextField {...params} label={t("Person type")} />}
+                      renderInput={params => <TextField {...params} label={t('Person type')} />}
                     />
                   )
                 }}
@@ -322,11 +325,11 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
             <Controller
               name='nomeFantasia'
               control={control}
-              rules={{ required: true }}           
+              rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
-                  <TextField
+                <TextField
                   value={value}
-                  label={t("Trading name")}
+                  label={t('Trading name')}
                   onChange={onChange}
                   placeholder='e.g.: Empresa de software'
                   error={Boolean(errors.nomeFantasia)}
@@ -334,70 +337,79 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               )}
             />
           </FormControl>
-          {isTipoPessoaFisica? (
+          {isTipoPessoaFisica ? (
             <></>
-          ): isTipoPessoaJuridica? (
+          ) : isTipoPessoaJuridica ? (
             <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='razaoSocial'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label={t("Corporate Name")}
-                  onChange={onChange}
-                  placeholder='e.g.: Empresa de software LTDA'
-                />
-              )}
-            />
-          </FormControl>
-          ):(<></>)}
-          {isTipoPessoaFisica? (
+              <Controller
+                name='razaoSocial'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    label={t('Corporate Name')}
+                    onChange={onChange}
+                    placeholder='e.g.: Empresa de software LTDA'
+                  />
+                )}
+              />
+            </FormControl>
+          ) : (
             <></>
-          ): isTipoPessoaJuridica? (
+          )}
+          {isTipoPessoaFisica ? (
+            <></>
+          ) : isTipoPessoaJuridica ? (
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
                 name='inscricaoEstadual'
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <TextField value={value} label={t("State registration")} onChange={onChange} placeholder='e.g.: 123456' />
+                  <TextField
+                    value={value}
+                    label={t('State registration')}
+                    onChange={onChange}
+                    placeholder='e.g.: 123456'
+                  />
                 )}
               />
             </FormControl>
-          ):(<></>)}
-          {isTipoPessoaFisica? (
+          ) : (
+            <></>
+          )}
+          {isTipoPessoaFisica ? (
             <Grid sx={{ display: 'flex', alignItems: 'center', width: 'auto' }} xs={12} md={12} lg={12}>
-            <Grid sx={{ width: 'auto' }} xs={10} md={12} lg={12}>
-              <FormControl sx={{ mb: 6 }} fullWidth={true}>
-                <Controller
-                  name='cpf'
-                  control={control}
-                  render={props => (
-                    <InputMask
-                      mask='999.999.999-99'
-                      value={props.field.value}
-                      disabled={false}
-                      onChange={(value): void => {
-                        props.field.onChange(value)
-                        changeHandler(value)
-                      }}
-                    >
-                      <TextField
-                        sx={{ width: 'auto' }}
+              <Grid sx={{ width: 'auto' }} xs={10} md={12} lg={12}>
+                <FormControl sx={{ mb: 6 }} fullWidth={true}>
+                  <Controller
+                    name='cpf'
+                    control={control}
+                    render={props => (
+                      <InputMask
+                        mask='999.999.999-99'
+                        value={props.field.value}
                         disabled={false}
-                        name='cpf'
-                        type='text'
-                        label={t("Individual Taxpayer Registration")}
-                        placeholder='e.g.: 159.753.486-13'
-                        error={Boolean(errors.cnpj)}
-                      />
-                    </InputMask>
-                  )}
-                />
-              </FormControl>
+                        onChange={(value): void => {
+                          props.field.onChange(value)
+                          changeHandler(value)
+                        }}
+                      >
+                        <TextField
+                          sx={{ width: 'auto' }}
+                          disabled={false}
+                          name='cpf'
+                          type='text'
+                          label={t('Individual Taxpayer Registration')}
+                          placeholder='e.g.: 159.753.486-13'
+                          error={Boolean(errors.cnpj)}
+                        />
+                      </InputMask>
+                    )}
+                  />
+                </FormControl>
+              </Grid>
             </Grid>
-          </Grid>
-          ): isTipoPessoaJuridica? (
+          ) : isTipoPessoaJuridica ? (
             <Grid sx={{ display: 'flex', alignItems: 'center', width: 'auto' }} xs={12} md={12} lg={12}>
               <Grid sx={{ width: 'auto' }} xs={10} md={10} lg={10}>
                 <FormControl sx={{ mb: 6 }} fullWidth={true}>
@@ -419,7 +431,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
                           disabled={false}
                           name='cnpj'
                           type='text'
-                          label={t("Federal registration")}
+                          label={t('Federal registration')}
                           placeholder='e.g.: 60.133.365/0001-16'
                           error={Boolean(errors.cnpj)}
                         />
@@ -431,13 +443,20 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               </Grid>
               <Grid xs={2} md={2} lg={2}>
                 <Tooltip title={t('Search CNPJ')}>
-                  <IconButton onClick={handleClick} sx={{ ml: 4, mb: 6 }} aria-label='capture screenshot' color='primary'>
+                  <IconButton
+                    onClick={handleClick}
+                    sx={{ ml: 4, mb: 6 }}
+                    aria-label='capture screenshot'
+                    color='primary'
+                  >
                     <StoreSearchOutline fontSize='medium' />
                   </IconButton>
                 </Tooltip>
               </Grid>
             </Grid>
-          ):(<></>)}
+          ) : (
+            <></>
+          )}
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='telefonePrincipal'
@@ -457,7 +476,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
                     disabled={false}
                     name='telefonePrincipal'
                     type='text'
-                    label={t("Phone number")}
+                    label={t('Phone number')}
                     placeholder='e.g.: (48) 9.8896-1111'
                   />
                 </InputMask>
@@ -469,12 +488,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               name='emailPrincipal'
               control={control}
               render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label={t("E-mail")}
-                  onChange={onChange}
-                  placeholder='e.g.: nome@email.com'
-                />
+                <TextField value={value} label={t('E-mail')} onChange={onChange} placeholder='e.g.: nome@email.com' />
               )}
             />
           </FormControl>
@@ -485,26 +499,33 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               render={({ field: { value, onChange } }) => (
                 <TextField
                   value={value}
-                  label={t("Note")}
+                  label={t('Note')}
                   onChange={onChange}
-                  placeholder={t("(e.g.: Note about the customer)")}
+                  placeholder={t('(e.g.: Note about the customer)')}
                 />
               )}
             />
           </FormControl>
-          {isTipoPessoaFisica? (
+          {isTipoPessoaFisica ? (
             <></>
-          ): isTipoPessoaJuridica? (
+          ) : isTipoPessoaJuridica ? (
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
                 name='dataFundacao'
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <TextField value={value} label={t("Foundation date")} onChange={onChange} placeholder='e.g.: 10/01/2000' />
+                  <TextField
+                    value={value}
+                    label={t('Foundation date')}
+                    onChange={onChange}
+                    placeholder='e.g.: 10/01/2000'
+                  />
                 )}
               />
             </FormControl>
-          ):(<></>)}
+          ) : (
+            <></>
+          )}
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='codigoMunicipio'
@@ -513,7 +534,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
                 <TextField
                   type='number'
                   value={value}
-                  label={t("City code")}
+                  label={t('City code')}
                   onChange={onChange}
                   placeholder='e.g.: 654789'
                 />
@@ -525,7 +546,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               name='rua'
               control={control}
               render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t("Street")} onChange={onChange} placeholder='e.g.: Rua Abílio Diniz' />
+                <TextField value={value} label={t('Street')} onChange={onChange} placeholder='e.g.: Rua Abílio Diniz' />
               )}
             />
           </FormControl>
@@ -534,7 +555,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               name='numero'
               control={control}
               render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t("Number")} onChange={onChange} placeholder='e.g.: 52' />
+                <TextField value={value} label={t('Number')} onChange={onChange} placeholder='e.g.: 52' />
               )}
             />
           </FormControl>
@@ -545,9 +566,9 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               render={({ field: { value, onChange } }) => (
                 <TextField
                   value={value}
-                  label={t("Address complement")}
+                  label={t('Address complement')}
                   onChange={onChange}
-                  placeholder={t("(e.g.: Next to Banco do Brasil)")}
+                  placeholder={t('(e.g.: Next to Banco do Brasil)')}
                 />
               )}
             />
@@ -557,7 +578,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               name='cidade'
               control={control}
               render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t("City")} onChange={onChange} placeholder='e.g.: Criciúma' />
+                <TextField value={value} label={t('City')} onChange={onChange} placeholder='e.g.: Criciúma' />
               )}
             />
           </FormControl>
@@ -566,7 +587,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
               name='estado'
               control={control}
               render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t("State")} onChange={onChange} placeholder='e.g.: Santa Catarina' />
+                <TextField value={value} label={t('State')} onChange={onChange} placeholder='e.g.: Santa Catarina' />
               )}
             />
           </FormControl>
@@ -589,7 +610,7 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
                     disabled={false}
                     name='cep'
                     type='text'
-                    label={t("Zip code")}
+                    label={t('Zip code')}
                     placeholder='e.g.: 88801-000'
                   />
                 </InputMask>
@@ -599,10 +620,10 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
           {isTipoPessoaFisica}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }} onClick={handleSubmit(onSubmit)}>
-              {t("Save")}
+              {t('Save')}
             </Button>
             <Button size='large' variant='outlined' color='secondary' onClick={handleClose}>
-              {t("Cancel")}
+              {t('Cancel')}
             </Button>
           </Box>
         </form>
