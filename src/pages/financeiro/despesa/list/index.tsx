@@ -46,7 +46,7 @@ import { DespesaType } from 'src/types/financeiro/despesa/despesaTypes'
 
 // ** Custom Components Imports
 import TableHeader from 'src/views/financeiro/despesa/list/TableHeader'
-import ClienteAddDrawer from 'src/views/negocios/comercial/cliente/new/ClienteAddDrawer'
+import DespesaAddDrawer from 'src/views/financeiro/despesa/new/DespesaAddDrawer'
 
 // ** Context Imports
 import { AbilityContext } from 'src/layouts/components/acl/Can'
@@ -260,7 +260,7 @@ const DespesaList = () => {
   // ** State
   const [value, setValue] = useState<string>('')
   const [pageSize, setPageSize] = useState<number>(10)
-  const [clienteAddOpen, setClienteAddOpen] = useState<boolean>(false)
+  const [despesaAddOpen, setDespesaAddOpen] = useState<boolean>(false)
 
   const dispatch = useDispatch<AppDispatch>()
   const store = useSelector((state: RootState) => state.despesa)
@@ -307,7 +307,7 @@ const DespesaList = () => {
     }
   }
 
-  const toggleClienteAddDrawer = () => setClienteAddOpen(!clienteAddOpen)
+  const toggleDespesaAddDrawer = () => setDespesaAddOpen(!despesaAddOpen)
 
   const columns = [
     ...defaultColumns,
@@ -356,7 +356,7 @@ const DespesaList = () => {
       {ability?.can('list', 'ac-cliente-page') ? (
         <Grid item xs={12}>
           <Card>
-            <TableHeader value={value} handleFilter={handleFilter} toggle={toggleClienteAddDrawer} />
+            <TableHeader value={value} handleFilter={handleFilter} toggle={toggleDespesaAddDrawer} />
             <DataGrid
               localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
               autoHeight
@@ -374,7 +374,7 @@ const DespesaList = () => {
         <>{t('You do not have permission to view this resource.')}</>
       )}
       {ability?.can('create', 'ac-despesa-page') ? (
-        <ClienteAddDrawer open={clienteAddOpen} toggle={toggleClienteAddDrawer} />
+        <DespesaAddDrawer open={despesaAddOpen} toggle={toggleDespesaAddDrawer} />
       ) : (
         <></>
       )}

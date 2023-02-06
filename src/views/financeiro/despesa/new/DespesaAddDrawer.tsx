@@ -49,7 +49,7 @@ import clientApiService from 'src/@api-center/negocios/comercial/cliente/cliente
 import enumApiService from 'src/@api-center/sistema/enum/enumServicoApiService'
 import { Autocomplete } from '@mui/material'
 
-interface ClienteAddDrawerType {
+interface DespesaAddDrawerType {
   open: boolean
   toggle: () => void
 }
@@ -121,7 +121,7 @@ const defaultValues = {
   status: ''
 }
 
-const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
+const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   // ** Props
   const { open, toggle } = props
 
@@ -289,17 +289,35 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
       sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 400 } } }}
     >
       <Header>
-        <Typography variant='h6'>{t('Client New')}</Typography>
+        <Typography variant='h6'>Nova Despesa</Typography>
         <Close fontSize='small' onClick={handleClose} sx={{ cursor: 'pointer' }} />
       </Header>
       <Grid container spacing={0} sx={{ pl: 2, pt: 2, pr: 2, pb: 2 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid item xs={12} md={12} lg={12}>
             <Alert sx={{ mb: '20px' }} severity='warning'>
-              Informe os dados no campo CNPJ e faça a busca das informações do cliente diretamente da RECEITA.
+              Para gerar automaticamente as parcelas, informe o tipo de sistema de parcelamento.
             </Alert>
           </Grid>
           <Grid>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='dataOperacao'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField value={value} onChange={onChange} type='date' label="Data realização operação" />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='valorPrincipal'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField value={value} onChange={onChange} type='date' label="Data realização operação" />
+                )}
+              />
+            </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
                 name='tipoPessoa'
@@ -510,15 +528,10 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
           ) : isTipoPessoaJuridica ? (
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='dataFundacao'
+                name='datafundacao'
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <TextField
-                    value={value}
-                    label={t('Foundation date')}
-                    onChange={onChange}
-                    placeholder='e.g.: 10/01/2000'
-                  />
+                  <TextField value={value} onChange={onChange} type='date' label={t('Start date period')} />
                 )}
               />
             </FormControl>
@@ -633,9 +646,9 @@ const ClienteAddDrawer = (props: ClienteAddDrawerType) => {
 
 // ** Controle de acesso da página
 // ** Usuário deve possuir a habilidade para ter acesso a esta página
-ClienteAddDrawer.acl = {
+DespesaAddDrawer.acl = {
   action: 'create',
-  subject: 'ac-cliente-page'
+  subject: 'ac-despesa-page'
 }
 
-export default ClienteAddDrawer
+export default DespesaAddDrawer
