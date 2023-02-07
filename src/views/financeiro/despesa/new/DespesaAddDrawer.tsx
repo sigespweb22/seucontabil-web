@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton'
 import StoreSearchOutline from 'mdi-material-ui/StoreSearchOutline'
 import { styled } from '@mui/material/styles'
 import Grid from '@mui/material/Grid'
+import { Autocomplete } from '@mui/material'
 
 // ** Third Party Imports
 import * as yup from 'yup'
@@ -33,10 +34,11 @@ import Tooltip from '@mui/material/Tooltip'
 import { useDispatch } from 'react-redux'
 
 // ** Actions Imports
-import { addClientes } from 'src/store/negocios/comercial/cliente'
+import { addDespesa } from 'src/store/financeiro/despesa/index'
 
 // ** Types Imports
 import { AppDispatch } from 'src/store'
+import { DespesaType } from 'src/types/financeiro/despesa/despesaTypes'
 
 // ** Axios Imports
 import axios from 'axios'
@@ -45,34 +47,13 @@ import axios from 'axios'
 import InputMask from 'react-input-mask'
 
 // ** Api Services
-import clientApiService from 'src/@api-center/negocios/comercial/cliente/clienteApiService'
+import pessoaApiService from 'src/@api-center/sistema/pessoa/pessoaApiService'
+import clienteApiService from 'src/@api-center/negocios/comercial/cliente/clienteApiService'
 import enumApiService from 'src/@api-center/sistema/enum/enumServicoApiService'
-import { Autocomplete } from '@mui/material'
 
 interface DespesaAddDrawerType {
   open: boolean
   toggle: () => void
-}
-
-interface ClientData {
-  nomeFantasia: string
-  razaoSocial: string
-  inscricaoEstadual: string
-  tipoPessoa: string
-  cnpj: string | undefined
-  cpf: string | undefined
-  telefonePrincipal: string
-  emailPrincipal: string
-  observacao: string
-  dataFundacao: string
-  codigoMunicipio: number
-  rua: string
-  numero: string
-  complemento: string
-  cidade: string
-  estado: string
-  cep: string
-  status: string
 }
 
 const showErrors = (field: string, valueLen: number, min: number) => {
@@ -133,6 +114,8 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   const [isTipoPessoaFisica, setIsTipoPessoaFisica] = useState(false)
   const [isTipoPessoaJuridica, setIsTipoPessoaJuridica] = useState(true)
   const [tiposPessoa, setTiposPessoa] = useState([])
+  const [pessoas, setPessoas] = useState([]);
+  const [clientes, setClientes] = useState([]);
 
   const config = {
     headers: {
@@ -140,12 +123,69 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
     }
   }
 
+  // ** get tipos pessoa
   useEffect(() => {
-    const tiposPessoaRequest = axios.get(enumApiService.tiposPessoaListAsync, config)
+    const tiposPessoaRequest = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}/"CREDOR"`, config)
 
     tiposPessoaRequest
       .then(response => {
         if (response.status == 200) setTiposPessoa(response.data)
+      })
+      .catch(resp => {
+        if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
+
+        if (typeof resp.response.data != 'undefined') {
+          resp.response.data.errors.forEach((err: any) => {
+            try {
+              const statusCode = err.match(/\d+/)[0]
+              if (statusCode === '0') return toast.error('Ops! Algo deu errado.')
+              if (statusCode === '404') return toast.error('CNPJ não encontrado na receita federal.')
+              if (statusCode === '400')
+                return toast.error('Ops! Algo deu errado. Verifique o CNPJ informado e tente novamente.')
+            } catch (e) {
+              return toast.error(`${e}<br>Ops! Algo deu errado.`)
+            }
+          })
+        }
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ** get tipos pessoa
+  useEffect(() => {
+    const getPessoas = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}/"CREDOR"`, config)
+
+    getPessoas
+      .then(response => {
+        if (response.status == 200) setPessoas(response.data)
+      })
+      .catch(resp => {
+        if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
+
+        if (typeof resp.response.data != 'undefined') {
+          resp.response.data.errors.forEach((err: any) => {
+            try {
+              const statusCode = err.match(/\d+/)[0]
+              if (statusCode === '0') return toast.error('Ops! Algo deu errado.')
+              if (statusCode === '404') return toast.error('CNPJ não encontrado na receita federal.')
+              if (statusCode === '400')
+                return toast.error('Ops! Algo deu errado. Verifique o CNPJ informado e tente novamente.')
+            } catch (e) {
+              return toast.error(`${e}<br>Ops! Algo deu errado.`)
+            }
+          })
+        }
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ** get clientes
+  useEffect(() => {
+    const getClientes = axios.get(`${clienteApiService.listToSelectAsync}`, config)
+
+    getClientes
+      .then(response => {
+        if (response.status == 200) setClientes(response.data)
       })
       .catch(resp => {
         if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
@@ -181,8 +221,8 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
     resolver: yupResolver(schema)
   })
 
-  const onSubmit = (data: ClientData) => {
-    dispatch(addClientes({ ...data }))
+  const onSubmit = (data: DespesaType) => {
+    dispatch(addDespesa({ ...data }))
     toggle()
     reset()
   }
@@ -307,6 +347,44 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                 render={({ field: { value, onChange } }) => (
                   <TextField value={value} onChange={onChange} type='date' label="Data realização operação" />
                 )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='cliente'
+                control={control}
+                render={({ field: { value, onChange } }) => {
+                  return (
+                    <Autocomplete
+                      value={value}
+                      options={clientes}
+                      onChange={(event, newValue) => {
+                        onChange(newValue), onChangeIsTipoPessoa(newValue)
+                      }}
+                      id='autocomplete-controlled'
+                      renderInput={params => <TextField {...params} label={"Cliente"} />}
+                    />
+                  )
+                }}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='pessoa'
+                control={control}
+                render={({ field: { value, onChange } }) => {
+                  return (
+                    <Autocomplete
+                      value={value}
+                      options={pessoas}
+                      onChange={(event, newValue) => {
+                        onChange(newValue), onChangeIsTipoPessoa(newValue)
+                      }}
+                      id='autocomplete-controlled'
+                      renderInput={params => <TextField {...params} label={Pessoa} />}
+                    />
+                  )
+                }}
               />
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
