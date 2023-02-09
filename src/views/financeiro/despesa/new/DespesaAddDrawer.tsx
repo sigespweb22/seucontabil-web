@@ -123,37 +123,9 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
     }
   }
 
-  // ** get tipos pessoa
+  // ** get pessoas
   useEffect(() => {
-    const tiposPessoaRequest = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}/"CREDOR"`, config)
-
-    tiposPessoaRequest
-      .then(response => {
-        if (response.status == 200) setTiposPessoa(response.data)
-      })
-      .catch(resp => {
-        if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
-
-        if (typeof resp.response.data != 'undefined') {
-          resp.response.data.errors.forEach((err: any) => {
-            try {
-              const statusCode = err.match(/\d+/)[0]
-              if (statusCode === '0') return toast.error('Ops! Algo deu errado.')
-              if (statusCode === '404') return toast.error('CNPJ não encontrado na receita federal.')
-              if (statusCode === '400')
-                return toast.error('Ops! Algo deu errado. Verifique o CNPJ informado e tente novamente.')
-            } catch (e) {
-              return toast.error(`${e}<br>Ops! Algo deu errado.`)
-            }
-          })
-        }
-      })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // ** get tipos pessoa
-  useEffect(() => {
-    const getPessoas = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}/"CREDOR"`, config)
+    const getPessoas = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}/CREDOR`, config)
 
     getPessoas
       .then(response => {
@@ -342,15 +314,6 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
           <Grid>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='dataOperacao'
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField value={value} onChange={onChange} type='date' label="Data realização operação" />
-                )}
-              />
-            </FormControl>
-            <FormControl fullWidth sx={{ mb: 6 }}>
-              <Controller
                 name='cliente'
                 control={control}
                 render={({ field: { value, onChange } }) => {
@@ -367,7 +330,7 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                   )
                 }}
               />
-            </FormControl>
+            </FormControl>  
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
                 name='pessoa'
@@ -381,7 +344,7 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                         onChange(newValue), onChangeIsTipoPessoa(newValue)
                       }}
                       id='autocomplete-controlled'
-                      renderInput={params => <TextField {...params} label={Pessoa} />}
+                      renderInput={params => <TextField {...params} label={"Credor"} />}
                     />
                   )
                 }}
@@ -392,10 +355,33 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                 name='valorPrincipal'
                 control={control}
                 render={({ field: { value, onChange } }) => (
+                  <TextField value={value} onChange={onChange} type='date' label="Valor principal" />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='dataOperacao'
+                control={control}
+                render={({ field: { value, onChange } }) => (
                   <TextField value={value} onChange={onChange} type='date' label="Data realização operação" />
                 )}
               />
             </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='valorCusto'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    label='Valor custo'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 150,00)'
+                  />
+                )}
+              />
+            </FormControl>                               
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
                 name='tipoPessoa'
