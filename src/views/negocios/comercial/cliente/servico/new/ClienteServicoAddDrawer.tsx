@@ -174,6 +174,7 @@ const SidebarClienteServicoAdd = (props: SidebarClienteServicoAddType) => {
               render={({ field: { value, onChange } }) => (
                 <TextField
                   value={value}
+                  type="number"
                   label='Valor venda'
                   onChange={onChange}
                   placeholder='(e.g.: R$ 150,00)'

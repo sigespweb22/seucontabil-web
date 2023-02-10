@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, ChangeEvent, useEffect } from 'react'
+import { useState, ChangeEvent, useEffect, JSXElementConstructor, ReactElement, ReactFragment, ReactNode, ReactPortal } from 'react'
 
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
@@ -9,9 +9,6 @@ import Typography from '@mui/material/Typography'
 import Alert from '@mui/material/Alert'
 import Box, { BoxProps } from '@mui/material/Box'
 import FormControl from '@mui/material/FormControl'
-import FormHelperText from '@mui/material/FormHelperText'
-import IconButton from '@mui/material/IconButton'
-import StoreSearchOutline from 'mdi-material-ui/StoreSearchOutline'
 import { styled } from '@mui/material/styles'
 import Grid from '@mui/material/Grid'
 import { Autocomplete } from '@mui/material'
@@ -20,7 +17,7 @@ import { Autocomplete } from '@mui/material'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm, Controller } from 'react-hook-form'
-import { toast } from 'react-toastify'
+import { toast, ToastContentProps } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 // Import Translate
@@ -28,7 +25,6 @@ import { useTranslation } from 'react-i18next'
 
 // ** Icons Imports
 import Close from 'mdi-material-ui/Close'
-import Tooltip from '@mui/material/Tooltip'
 
 // ** Store Imports
 import { useDispatch } from 'react-redux'
@@ -43,9 +39,6 @@ import { DespesaType } from 'src/types/financeiro/despesa/despesaTypes'
 // ** Axios Imports
 import axios from 'axios'
 
-// ** InputMask Imports
-import InputMask from 'react-input-mask'
-
 // ** Api Services
 import pessoaApiService from 'src/@api-center/sistema/pessoa/pessoaApiService'
 import clienteApiService from 'src/@api-center/negocios/comercial/cliente/clienteApiService'
@@ -56,14 +49,9 @@ interface DespesaAddDrawerType {
   toggle: () => void
 }
 
-const showErrors = (field: string, valueLen: number, min: number) => {
-  if (valueLen === 0) {
-    return `${field} é requerido (a)`
-  } else if (valueLen > 0 && valueLen < min) {
-    return `${field} deve ter pelo menos ${min} caracteres`
-  } else {
-    return ''
-  }
+interface GenericModelToSelect2Interface {
+  id: string
+  nome: string
 }
 
 const Header = styled(Box)<BoxProps>(({ theme }) => ({
@@ -74,33 +62,33 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
   backgroundColor: theme.palette.background.default
 }))
 
-const schema = yup.object().shape({
-  nomeFantasia: yup
-    .string()
-    .min(3, obj => showErrors('Nome fantasia', obj.value.length, obj.min))
-    .required()
-})
-
 const defaultValues = {
-  nomeFantasia: '',
-  razaoSocial: '',
-  inscricaoEstadual: '',
-  tipoPessoa: 'JURIDICA',
-  cnpj: undefined,
-  cpf: undefined,
-  telefonePrincipal: '',
-  emailPrincipal: '',
-  observacao: '',
-  dataFundacao: '0001-01-01 00:00:00',
-  codigoMunicipio: 0,
-  rua: '',
-  numero: '',
-  complemento: '',
-  cidade: '',
-  estado: '',
-  cep: '',
+  tipoPessoa: '',
+  formaPagamento: '',
+  sistemaParcelamento: '',
+  totalParcelas: 0,
+  dataOperacao: '',
+  valorPrincipal: 0,
+  iof: 0,
+  seguro: 0,
+  tarifa: 0,
+  custoEfetivoTotalAno: 0,
+  custoEfetivoTotalMes: 0,
+  custoEfetivoTotalDia: 0,
+  valorEntrada: 0,
+  valorParcelado: 0,
+  valorTotal: 0,
+  valorParcela: 0,
+  cliente: '',
+  clienteId: '',
+  pessoa: '',
+  pessoaId: '',
+  saldo: '',
   status: ''
 }
+
+const defaultValuesCliente: { id: string, nome: string  }[] = [];
+const defaultValuesPessoa: { id: string, nome: string  }[] = [];
 
 const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   // ** Props
@@ -111,11 +99,10 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   const [cnpjToSearch, setCnpjToSearch] = useState('')
 
   // ** State
-  const [isTipoPessoaFisica, setIsTipoPessoaFisica] = useState(false)
-  const [isTipoPessoaJuridica, setIsTipoPessoaJuridica] = useState(true)
-  const [tiposPessoa, setTiposPessoa] = useState([])
-  const [pessoas, setPessoas] = useState([]);
-  const [clientes, setClientes] = useState([]);
+  const [pessoas, setPessoas] = useState<GenericModelToSelect2Interface[]>(defaultValuesPessoa);
+  const [clientes, setClientes] = useState<GenericModelToSelect2Interface[]>(defaultValuesCliente);
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  const [sistemasParcelamento, setSistemasParcelamento] = useState([]);
 
   const config = {
     headers: {
@@ -125,7 +112,7 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
 
   // ** get pessoas
   useEffect(() => {
-    const getPessoas = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}/CREDOR`, config)
+    const getPessoas = axios.get(`${pessoaApiService.listToSelectByNaturezaAsync}?naturezaPessoa=CREDOR`, config)
 
     getPessoas
       .then(response => {
@@ -135,17 +122,13 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
         if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
 
         if (typeof resp.response.data != 'undefined') {
-          resp.response.data.errors.forEach((err: any) => {
-            try {
-              const statusCode = err.match(/\d+/)[0]
-              if (statusCode === '0') return toast.error('Ops! Algo deu errado.')
-              if (statusCode === '404') return toast.error('CNPJ não encontrado na receita federal.')
-              if (statusCode === '400')
-                return toast.error('Ops! Algo deu errado. Verifique o CNPJ informado e tente novamente.')
-            } catch (e) {
-              return toast.error(`${e}<br>Ops! Algo deu errado.`)
-            }
-          })
+          try {
+            if (resp.response.status?.toString().match(/\d+/)[0] === '0') toast.error('Ops! Algo deu errado.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '404') toast.error('Nenhum cliente encontrado para criar uma despesa.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '400') resp.response.data.errors.map((x: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | ReactFragment | ReactPortal | ((props: ToastContentProps<unknown>) => ReactNode) | null | undefined) => toast.error(x))
+          } catch (e) {
+            `${e}<br>Ops! Algo deu errado.`
+          }
         }
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,23 +140,68 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
 
     getClientes
       .then(response => {
+        debugger
         if (response.status == 200) setClientes(response.data)
       })
       .catch(resp => {
         if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
 
         if (typeof resp.response.data != 'undefined') {
-          resp.response.data.errors.forEach((err: any) => {
-            try {
-              const statusCode = err.match(/\d+/)[0]
-              if (statusCode === '0') return toast.error('Ops! Algo deu errado.')
-              if (statusCode === '404') return toast.error('CNPJ não encontrado na receita federal.')
-              if (statusCode === '400')
-                return toast.error('Ops! Algo deu errado. Verifique o CNPJ informado e tente novamente.')
-            } catch (e) {
-              return toast.error(`${e}<br>Ops! Algo deu errado.`)
-            }
-          })
+          try {
+            if (resp.response.status?.toString().match(/\d+/)[0] === '0') toast.error('Ops! Algo deu errado.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '404') toast.error('Nenhum cliente encontrado para criar uma despesa.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '400') resp.response.data.errors.map((x: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | ReactFragment | ReactPortal | ((props: ToastContentProps<unknown>) => ReactNode) | null | undefined) => toast.error(x))
+          } catch (e) {
+            `${e}<br>Ops! Algo deu errado.`
+          }
+        }
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ** get formas pagamento
+  useEffect(() => {
+    const getFormasPagamento = axios.get(`${enumApiService.formasPagamentoListAsync}`, config)
+
+    getFormasPagamento
+      .then(response => {
+        if (response.status == 200) setFormasPagamento(response.data)
+      })
+      .catch(resp => {
+        if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
+
+        if (typeof resp.response.data != 'undefined') {
+          try {
+            if (resp.response.status?.toString().match(/\d+/)[0] === '0') toast.error('Ops! Algo deu errado.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '404') toast.error('Nenhum cliente encontrado para criar uma despesa.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '400') resp.response.data.errors.map((x: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | ReactFragment | ReactPortal | ((props: ToastContentProps<unknown>) => ReactNode) | null | undefined) => toast.error(x))
+          } catch (e) {
+            `${e}<br>Ops! Algo deu errado.`
+          }
+        }
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ** get sistemas parcelamento
+  useEffect(() => {
+    const getSistemasParcelamento = axios.get(`${enumApiService.sistemasParcelamentoListAsync}`, config)
+
+    getSistemasParcelamento
+      .then(response => {
+        if (response.status == 200) setSistemasParcelamento(response.data)
+      })
+      .catch(resp => {
+        if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
+
+        if (typeof resp.response.data != 'undefined') {
+          try {
+            if (resp.response.status?.toString().match(/\d+/)[0] === '0') toast.error('Ops! Algo deu errado.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '404') toast.error('Nenhum cliente encontrado para criar uma despesa.')
+            if (resp.response.status?.toString().match(/\d+/)[0] === '400') resp.response.data.errors.map((x: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | ReactFragment | ReactPortal | ((props: ToastContentProps<unknown>) => ReactNode) | null | undefined) => toast.error(x))
+          } catch (e) {
+            `${e}<br>Ops! Algo deu errado.`
+          }
         }
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -184,13 +212,10 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   const {
     reset,
     control,
-    setValue,
-    handleSubmit,
-    formState: { errors }
+    handleSubmit
   } = useForm({
     defaultValues,
-    mode: 'onChange',
-    resolver: yupResolver(schema)
+    mode: 'onChange'
   })
 
   const onSubmit = (data: DespesaType) => {
@@ -202,93 +227,10 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   const handleClose = () => {
     toggle()
     reset()
-    onChangeIsTipoPessoa('JURIDICA')
   }
 
   const changeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setCnpjToSearch(event.target.value)
-  }
-
-  const handleClick = () => {
-    if (typeof cnpjToSearch == 'undefined' || cnpjToSearch == '') {
-      return toast.error('CNPJ é requerido para efetuar a busca.')
-    }
-
-    const storedToken = window.localStorage.getItem(clientApiService.storageTokenKeyName)!
-    const config = {
-      headers: {
-        Authorization: 'Bearer ' + storedToken
-      }
-    }
-
-    const cnpjScape = cnpjToSearch.replace('.', '').replace('.', '').replace('/', '').replace('-', '')
-    axios
-      .get(clientApiService.listOneTPAsync.concat(cnpjScape), config)
-      .then(response => {
-        toast.success('CNPJ encontrado! Os dados da empresa serão automaticamente populados nos campos.')
-
-        setValue('nomeFantasia', response.data.alias != '' ? response.data.alias : defaultValues.nomeFantasia)
-        setValue(
-          'razaoSocial',
-          response.data.company.name != '' ? response.data.company.name : defaultValues.razaoSocial
-        )
-        setValue(
-          'telefonePrincipal',
-          response.data.phones.length >= 1
-            ? `${response.data.phones[0].area}${response.data.phones[0].number}`
-            : defaultValues.telefonePrincipal
-        )
-        setValue(
-          'emailPrincipal',
-          response.data.emails.length >= 1 ? response.data.emails[0].address : defaultValues.emailPrincipal
-        )
-        setValue('dataFundacao', response.data.founded != '' ? response.data.founded : defaultValues.dataFundacao)
-        setValue(
-          'codigoMunicipio',
-          response.data.address.municipality != '' ? response.data.address.municipality : defaultValues.dataFundacao
-        )
-        setValue('rua', response.data.address.street + ' - ' + response.data.address.district)
-        setValue('numero', response.data.address.number != '' ? response.data.address.number : defaultValues.numero)
-        setValue(
-          'complemento',
-          response.data.address.details != '' ? response.data.address.details : defaultValues.complemento
-        )
-        setValue('cidade', response.data.address.city != '' ? response.data.address.city : defaultValues.cidade)
-        setValue('estado', response.data.address.state != '' ? response.data.address.state : defaultValues.estado)
-        setValue('cep', response.data.address.zip != '' ? response.data.address.zip : defaultValues.cep)
-      })
-      .catch(resp => {
-        if (resp.message == 'Network Error') return toast.error('Você não tem permissão para esta ação.')
-
-        if (typeof resp.response.data != 'undefined') {
-          resp.response.data.errors.forEach((err: any) => {
-            try {
-              const statusCode = err.match(/\d+/)[0]
-              if (statusCode === '0') return toast.error('Ops! Algo deu errado.')
-              if (statusCode === '404') return toast.error('CNPJ não encontrado na receita federal.')
-              if (statusCode === '400')
-                return toast.error('Ops! Algo deu errado. Verifique o CNPJ informado e tente novamente.')
-            } catch (e) {
-              return toast.error(`${e}<br>Ops! Algo deu errado.`)
-            }
-          })
-        }
-      })
-  }
-
-  const onChangeIsTipoPessoa = (value: string | null) => {
-    switch (value) {
-      case 'FISICA':
-        setIsTipoPessoaFisica(true)
-        setIsTipoPessoaJuridica(false)
-        break
-      case 'JURIDICA':
-        setIsTipoPessoaFisica(false)
-        setIsTipoPessoaJuridica(true)
-        break
-      default:
-        return null
-    }
   }
 
   return (
@@ -314,37 +256,19 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
           <Grid>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='cliente'
+                name="cliente"
                 control={control}
-                render={({ field: { value, onChange } }) => {
+                render={({ field: { onChange } }) => {
                   return (
                     <Autocomplete
-                      value={value}
-                      options={clientes}
+                      sx={{ width: 360 }}
+                      options={clientes || []}
                       onChange={(event, newValue) => {
-                        onChange(newValue), onChangeIsTipoPessoa(newValue)
+                        onChange(newValue)
                       }}
                       id='autocomplete-controlled'
-                      renderInput={params => <TextField {...params} label={"Cliente"} />}
-                    />
-                  )
-                }}
-              />
-            </FormControl>  
-            <FormControl fullWidth sx={{ mb: 6 }}>
-              <Controller
-                name='pessoa'
-                control={control}
-                render={({ field: { value, onChange } }) => {
-                  return (
-                    <Autocomplete
-                      value={value}
-                      options={pessoas}
-                      onChange={(event, newValue) => {
-                        onChange(newValue), onChangeIsTipoPessoa(newValue)
-                      }}
-                      id='autocomplete-controlled'
-                      renderInput={params => <TextField {...params} label={"Credor"} />}
+                      getOptionLabel={option => option.nome}
+                      renderInput={params => <TextField {...params} label='Cliente' />}
                     />
                   )
                 }}
@@ -352,11 +276,22 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='valorPrincipal'
+                name="pessoa"
                 control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField value={value} onChange={onChange} type='date' label="Valor principal" />
-                )}
+                render={({ field: { onChange } }) => {
+                  return (
+                    <Autocomplete
+                      sx={{ width: 360 }}
+                      options={pessoas || []}
+                      onChange={(event, newValue) => {
+                        onChange(newValue)
+                      }}
+                      id='autocomplete-controlled'
+                      getOptionLabel={option => option.nome}
+                      renderInput={params => <TextField {...params} label='Credor' />}
+                    />
+                  )
+                }}
               />
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
@@ -370,330 +305,223 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='valorCusto'
+                name='valorPrincipal'
                 control={control}
                 render={({ field: { value, onChange } }) => (
                   <TextField
                     value={value}
-                    label='Valor custo'
+                    type="number"
+                    label='Valor principal'
                     onChange={onChange}
-                    placeholder='(e.g.: R$ 150,00)'
+                    placeholder='(e.g.: R$ 250000.00)'
                   />
                 )}
               />
-            </FormControl>                               
+            </FormControl> 
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='tipoPessoa'
+                name='valorEntrada'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Valor entrada'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 100000.00)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='saldo'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Saldo'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 150000.00)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='iof'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Iof'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 4566.59)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='seguro'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Seguro'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 1000.00)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='tarifa'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Tarifa'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 2615.00)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='valorTotal'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Valor Total'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 280000.00)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='custoEfetivoTotalAno'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='CET ao ano'
+                    onChange={onChange}
+                    placeholder='(e.g.: 15.45)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='custoEfetivoTotalMes'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='CET ao mês'
+                    onChange={onChange}
+                    placeholder='(e.g.: 1.204423)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='custoEfetivoTotalDia'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='CET ao dia'
+                    onChange={onChange}
+                    placeholder='(e.g.: 0.039916)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='formaPagamento'
                 control={control}
                 render={({ field: { value, onChange } }) => {
                   return (
                     <Autocomplete
                       value={value}
-                      options={tiposPessoa}
+                      options={formasPagamento}
                       onChange={(event, newValue) => {
-                        onChange(newValue), onChangeIsTipoPessoa(newValue)
+                        onChange(newValue)
                       }}
                       id='autocomplete-controlled'
-                      renderInput={params => <TextField {...params} label={t('Person type')} />}
+                      renderInput={params => <TextField {...params} label={"Formas parcelamento"} />}
                     />
                   )
                 }}
               />
             </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='totalParcelas'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Número parcelas'
+                    onChange={onChange}
+                    placeholder='(e.g.: 48)'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='sistemaParcelamento'
+                control={control}
+                render={({ field: { value, onChange } }) => {
+                  return (
+                    <Autocomplete
+                      value={value}
+                      options={sistemasParcelamento}
+                      onChange={(event, newValue) => {
+                        onChange(newValue)
+                      }}
+                      id='autocomplete-controlled'
+                      renderInput={params => <TextField {...params} label={"Sistema parcelamento"} />}
+                    />
+                  )
+                }}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='valorParcela'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField
+                    value={value}
+                    type="number"
+                    label='Valor parcela'
+                    onChange={onChange}
+                    placeholder='(e.g.: R$ 6501.25)'
+                  />
+                )}
+              />
+            </FormControl>
           </Grid>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='nomeFantasia'
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label={t('Trading name')}
-                  onChange={onChange}
-                  placeholder='e.g.: Empresa de software'
-                  error={Boolean(errors.nomeFantasia)}
-                />
-              )}
-            />
-          </FormControl>
-          {isTipoPessoaFisica ? (
-            <></>
-          ) : isTipoPessoaJuridica ? (
-            <FormControl fullWidth sx={{ mb: 6 }}>
-              <Controller
-                name='razaoSocial'
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField
-                    value={value}
-                    label={t('Corporate Name')}
-                    onChange={onChange}
-                    placeholder='e.g.: Empresa de software LTDA'
-                  />
-                )}
-              />
-            </FormControl>
-          ) : (
-            <></>
-          )}
-          {isTipoPessoaFisica ? (
-            <></>
-          ) : isTipoPessoaJuridica ? (
-            <FormControl fullWidth sx={{ mb: 6 }}>
-              <Controller
-                name='inscricaoEstadual'
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField
-                    value={value}
-                    label={t('State registration')}
-                    onChange={onChange}
-                    placeholder='e.g.: 123456'
-                  />
-                )}
-              />
-            </FormControl>
-          ) : (
-            <></>
-          )}
-          {isTipoPessoaFisica ? (
-            <Grid sx={{ display: 'flex', alignItems: 'center', width: 'auto' }} xs={12} md={12} lg={12}>
-              <Grid sx={{ width: 'auto' }} xs={10} md={12} lg={12}>
-                <FormControl sx={{ mb: 6 }} fullWidth={true}>
-                  <Controller
-                    name='cpf'
-                    control={control}
-                    render={props => (
-                      <InputMask
-                        mask='999.999.999-99'
-                        value={props.field.value}
-                        disabled={false}
-                        onChange={(value): void => {
-                          props.field.onChange(value)
-                          changeHandler(value)
-                        }}
-                      >
-                        <TextField
-                          sx={{ width: 'auto' }}
-                          disabled={false}
-                          name='cpf'
-                          type='text'
-                          label={t('Individual Taxpayer Registration')}
-                          placeholder='e.g.: 159.753.486-13'
-                          error={Boolean(errors.cnpj)}
-                        />
-                      </InputMask>
-                    )}
-                  />
-                </FormControl>
-              </Grid>
-            </Grid>
-          ) : isTipoPessoaJuridica ? (
-            <Grid sx={{ display: 'flex', alignItems: 'center', width: 'auto' }} xs={12} md={12} lg={12}>
-              <Grid sx={{ width: 'auto' }} xs={10} md={10} lg={10}>
-                <FormControl sx={{ mb: 6 }} fullWidth={true}>
-                  <Controller
-                    name='cnpj'
-                    control={control}
-                    render={props => (
-                      <InputMask
-                        mask='99.999.999/9999-99'
-                        value={props.field.value}
-                        disabled={false}
-                        onChange={(value): void => {
-                          props.field.onChange(value)
-                          changeHandler(value)
-                        }}
-                      >
-                        <TextField
-                          sx={{ width: 'auto' }}
-                          disabled={false}
-                          name='cnpj'
-                          type='text'
-                          label={t('Federal registration')}
-                          placeholder='e.g.: 60.133.365/0001-16'
-                          error={Boolean(errors.cnpj)}
-                        />
-                      </InputMask>
-                    )}
-                  />
-                  {errors.cnpj && <FormHelperText sx={{ color: 'error.main' }}>{errors.cnpj.message}</FormHelperText>}
-                </FormControl>
-              </Grid>
-              <Grid xs={2} md={2} lg={2}>
-                <Tooltip title={t('Search CNPJ')}>
-                  <IconButton
-                    onClick={handleClick}
-                    sx={{ ml: 4, mb: 6 }}
-                    aria-label='capture screenshot'
-                    color='primary'
-                  >
-                    <StoreSearchOutline fontSize='medium' />
-                  </IconButton>
-                </Tooltip>
-              </Grid>
-            </Grid>
-          ) : (
-            <></>
-          )}
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='telefonePrincipal'
-              control={control}
-              render={props => (
-                <InputMask
-                  mask='(99) 9.9999-9999'
-                  value={props.field.value}
-                  disabled={false}
-                  onChange={(value): void => {
-                    props.field.onChange(value)
-                    changeHandler(value)
-                  }}
-                >
-                  <TextField
-                    sx={{ width: 'auto' }}
-                    disabled={false}
-                    name='telefonePrincipal'
-                    type='text'
-                    label={t('Phone number')}
-                    placeholder='e.g.: (48) 9.8896-1111'
-                  />
-                </InputMask>
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='emailPrincipal'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t('E-mail')} onChange={onChange} placeholder='e.g.: nome@email.com' />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='observacao'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label={t('Note')}
-                  onChange={onChange}
-                  placeholder={t('(e.g.: Note about the customer)')}
-                />
-              )}
-            />
-          </FormControl>
-          {isTipoPessoaFisica ? (
-            <></>
-          ) : isTipoPessoaJuridica ? (
-            <FormControl fullWidth sx={{ mb: 6 }}>
-              <Controller
-                name='datafundacao'
-                control={control}
-                render={({ field: { value, onChange } }) => (
-                  <TextField value={value} onChange={onChange} type='date' label={t('Start date period')} />
-                )}
-              />
-            </FormControl>
-          ) : (
-            <></>
-          )}
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='codigoMunicipio'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  type='number'
-                  value={value}
-                  label={t('City code')}
-                  onChange={onChange}
-                  placeholder='e.g.: 654789'
-                />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='rua'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t('Street')} onChange={onChange} placeholder='e.g.: Rua Abílio Diniz' />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='numero'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t('Number')} onChange={onChange} placeholder='e.g.: 52' />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='complemento'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label={t('Address complement')}
-                  onChange={onChange}
-                  placeholder={t('(e.g.: Next to Banco do Brasil)')}
-                />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='cidade'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t('City')} onChange={onChange} placeholder='e.g.: Criciúma' />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='estado'
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <TextField value={value} label={t('State')} onChange={onChange} placeholder='e.g.: Santa Catarina' />
-              )}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='cep'
-              control={control}
-              render={props => (
-                <InputMask
-                  mask='99999-999'
-                  value={props.field.value}
-                  disabled={false}
-                  onChange={(value): void => {
-                    props.field.onChange(value)
-                    changeHandler(value)
-                  }}
-                >
-                  <TextField
-                    sx={{ width: 'auto' }}
-                    disabled={false}
-                    name='cep'
-                    type='text'
-                    label={t('Zip code')}
-                    placeholder='e.g.: 88801-000'
-                  />
-                </InputMask>
-              )}
-            />
-          </FormControl>
-          {isTipoPessoaFisica}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }} onClick={handleSubmit(onSubmit)}>
               {t('Save')}
