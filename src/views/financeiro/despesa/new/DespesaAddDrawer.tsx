@@ -14,8 +14,6 @@ import Grid from '@mui/material/Grid'
 import { Autocomplete } from '@mui/material'
 
 // ** Third Party Imports
-import * as yup from 'yup'
-import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm, Controller } from 'react-hook-form'
 import { toast, ToastContentProps } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -62,8 +60,10 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
   backgroundColor: theme.palette.background.default
 }))
 
+const defaultValuesCliente: { id: string, nome: string }[] = [];
+const defaultValuesPessoa: { id: string, nome: string  }[] = [];
+
 const defaultValues = {
-  tipoPessoa: '',
   formaPagamento: '',
   sistemaParcelamento: '',
   totalParcelas: 0,
@@ -79,16 +79,11 @@ const defaultValues = {
   valorParcelado: 0,
   valorTotal: 0,
   valorParcela: 0,
-  cliente: '',
-  clienteId: '',
-  pessoa: '',
-  pessoaId: '',
+  cliente: { id: '', nome: '' },
+  pessoa: { id: '', nome: '' },
   saldo: '',
   status: ''
 }
-
-const defaultValuesCliente: { id: string, nome: string  }[] = [];
-const defaultValuesPessoa: { id: string, nome: string  }[] = [];
 
 const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   // ** Props
@@ -96,7 +91,6 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
 
   // ** Hooks
   const { t } = useTranslation()
-  const [cnpjToSearch, setCnpjToSearch] = useState('')
 
   // ** State
   const [pessoas, setPessoas] = useState<GenericModelToSelect2Interface[]>(defaultValuesPessoa);
@@ -140,7 +134,6 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
 
     getClientes
       .then(response => {
-        debugger
         if (response.status == 200) setClientes(response.data)
       })
       .catch(resp => {
@@ -227,10 +220,6 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
   const handleClose = () => {
     toggle()
     reset()
-  }
-
-  const changeHandler = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setCnpjToSearch(event.target.value)
   }
 
   return (
