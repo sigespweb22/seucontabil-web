@@ -67,7 +67,7 @@ const defaultValues = {
   formaPagamento: '',
   sistemaParcelamento: '',
   totalParcelas: 0,
-  dataOperacao: '',
+  dataOperacao: null,
   valorPrincipal: 0,
   iof: 0,
   seguro: 0,
@@ -81,7 +81,7 @@ const defaultValues = {
   valorParcela: 0,
   cliente: { id: '', nome: '' },
   pessoa: { id: '', nome: '' },
-  saldo: '',
+  saldo: 0,
   status: ''
 }
 
@@ -288,14 +288,18 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                 name='dataOperacao'
                 control={control}
                 render={({ field: { value, onChange } }) => (
-                  <TextField value={value} onChange={onChange} type='date' label="Data realização operação" />
+                  <TextField 
+                    value={value} 
+                    onChange={onChange} 
+                    type='date' 
+                    label="Data realização operação" />
                 )}
               />
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
                 name='valorPrincipal'
-                control={control}
+                control={control}                
                 render={({ field: { value, onChange } }) => (
                   <TextField
                     value={value}
@@ -455,7 +459,7 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                         onChange(newValue)
                       }}
                       id='autocomplete-controlled'
-                      renderInput={params => <TextField {...params} label={"Formas parcelamento"} />}
+                      renderInput={params => <TextField {...params} label={"Forma pagamento"} />}
                     />
                   )
                 }}
@@ -501,6 +505,7 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
                 control={control}
                 render={({ field: { value, onChange } }) => (
                   <TextField
+                    disabled={true}
                     value={value}
                     type="number"
                     label='Valor parcela'
