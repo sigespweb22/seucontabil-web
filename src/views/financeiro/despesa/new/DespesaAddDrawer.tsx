@@ -75,7 +75,6 @@ const defaultValues = {
   custoEfetivoTotalAno: 0,
   custoEfetivoTotalMes: 0,
   custoEfetivoTotalDia: 0,
-  
   valorEntrada: 0,
   valorParcelado: 0,
   valorTotal: 0,

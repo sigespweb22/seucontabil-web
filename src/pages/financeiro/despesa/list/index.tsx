@@ -141,7 +141,8 @@ const defaultColumns = [
     headerAlign: 'left' as const,
     align: 'left' as const,
     renderCell: ({ row }: CellType) => {
-      const { nomeFantasia, emailPrincipal } = row.cliente
+      debugger
+      const { nome, emailPrincipal } = row.cliente
 
       return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -153,10 +154,10 @@ const defaultColumns = [
               variant='body2'
               sx={{ fontWeight: 600, color: 'text.primary', textDecoration: 'none' }}
             >
-              {nomeFantasia}
+              {nome}
             </Typography>
             <Typography noWrap component='a' variant='caption' sx={{ textDecoration: 'none' }}>
-              📬{emailPrincipal}
+              📬{nome}
             </Typography>
           </Box>
         </Box>
@@ -264,6 +265,7 @@ const DespesaList = () => {
 
   const dispatch = useDispatch<AppDispatch>()
   const store = useSelector((state: RootState) => state.despesa)
+  debugger
 
   useEffect(() => {
     dispatch(
