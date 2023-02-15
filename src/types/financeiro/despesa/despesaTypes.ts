@@ -14,6 +14,7 @@ export type DespesaType = {
   sistemaParcelamento: string
   totalParcelas: number
   dataOperacao: string
+  dataVencimentoPrimeiraParcela: string
   valorPrincipal: number
   iof: number
   seguro: number

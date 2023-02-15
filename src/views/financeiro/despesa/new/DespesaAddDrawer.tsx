@@ -68,6 +68,7 @@ const defaultValues = {
   sistemaParcelamento: '',
   totalParcelas: 0,
   dataOperacao: null,
+  dataVencimentoPrimeiraParcela: null,
   valorPrincipal: 0,
   iof: 0,
   seguro: 0,
