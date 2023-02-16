@@ -483,6 +483,19 @@ const DespesaAddDrawer = (props: DespesaAddDrawerType) => {
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
+                name='dataVencimentoPrimeiraParcela'
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <TextField 
+                    value={value} 
+                    onChange={onChange} 
+                    type='date' 
+                    label="Data vencimento primeira parcela" />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
                 name='sistemaParcelamento'
                 control={control}
                 render={({ field: { value, onChange } }) => {
