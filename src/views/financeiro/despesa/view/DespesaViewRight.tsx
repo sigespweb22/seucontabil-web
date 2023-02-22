@@ -10,15 +10,10 @@ import MuiTab, { TabProps } from '@mui/material/Tab'
 import TabContext from '@mui/lab/TabContext'
 
 // ** Icons Imports
-// import CogOutline from 'mdi-material-ui/CogOutline'
-// import PackageVariantClosed from 'mdi-material-ui/PackageVariantClosed'
-import FileDocumentEditOutline from 'mdi-material-ui/FileDocumentEditOutline'
-
+import BallotRecountOutline from 'mdi-material-ui/BallotRecountOutline'
 
 // ** Custom Components Imports
-// import ClienteServicoTableListToView from 'src/views/negocios/comercial/cliente/servico/list/ClienteServicoTableListToView'
-// import ClienteProdutoTableListToView from 'src/views/negocios/comercial/cliente/produto/list/ClienteProdutoTableListToView'
-import ClienteContratoTableListToView from 'src/views/negocios/comercial/cliente/contrato/list/ClienteContratoTableListToView'
+import DespesaParcelaTableListToView from 'src/views/financeiro/despesa-parcela/list/DespesaParcelaTableListToView'
 import { useTranslation } from 'react-i18next'
 
 interface Props {
@@ -37,7 +32,7 @@ const Tab = styled(MuiTab)<TabProps>(({ theme }) => ({
 
 const DespesaViewRight = ({ id }: Props) => {
   // ** State
-  const [value, setValue] = useState<string>('contratos')
+  const [value, setValue] = useState<string>('parcelas')
   const { t } = useTranslation()
 
   const handleChange = (event: SyntheticEvent, newValue: string) => {
@@ -53,23 +48,11 @@ const DespesaViewRight = ({ id }: Props) => {
         aria-label='forced scroll tabs example'
         sx={{ borderBottom: theme => `1px solid ${theme.palette.divider}` }}
       >
-        {/* <Tab value='servicos' label='SERVIÇOS' icon={<CogOutline />} />
-        <Tab value='produtos' label='PRODUTOS' icon={<PackageVariantClosed />} /> */}
-        <Tab value='contratos' label={t('CONTRACTS')} icon={<FileDocumentEditOutline />} />v
+        <Tab value='parcelas' label="PARCELAS" icon={<BallotRecountOutline />} />v
       </TabList>
-      {/* <Box sx={{ mt: 6 }}>
-        <TabPanel sx={{ p: 0 }} value='servicos'>
-          <ClienteServicoTableListToView id={id} />
-        </TabPanel>
-      </Box>
       <Box sx={{ mt: 6 }}>
-        <TabPanel sx={{ p: 0 }} value='produtos'>
-          <ClienteProdutoTableListToView id={id} />
-        </TabPanel>
-      </Box> */}
-      <Box sx={{ mt: 6 }}>
-        <TabPanel sx={{ p: 0 }} value='contratos'>
-          <ClienteContratoTableListToView id={id} />
+        <TabPanel sx={{ p: 0 }} value='parcelas'>
+          <DespesaParcelaTableListToView id={id} />
         </TabPanel>
       </Box>
     </TabContext>

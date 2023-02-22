@@ -33,29 +33,17 @@ export const fetchDataById = createAsyncThunk('appDespesaView/fetchData', async 
   return response.data
 })
 
-const clienteDefaultValue: ClienteType = {
+const clienteDefaultValue = {
   id: '',
-  nomeFantasia: '',
-  razaoSocial: '',
-  inscricaoEstadual: '',
-  tipoPessoa: '',
-  cnpj: '',
-  cpf: '',
-  telefonePrincipal: '',
-  emailPrincipal: '',
-  observacao: '',
-  dataFundacao: '',
-  codigoMunicipio: 0,
-  rua: '',
-  numero: '',
-  complemento: '',
-  cidade: '',
-  estado: '',
-  cep: '',
-  status: ''
+  nomeFantasia: ''
 }
 
-const defaultValues: DespesaType = {
+const pessoaDefaultValue = {
+  id: '',
+  nomeFantasia: ''
+}
+
+const defaultValues = {
   id: '',
   formaPagamento: '',
   sistemaParcelamento: '',
@@ -72,8 +60,13 @@ const defaultValues: DespesaType = {
   valorParcelado: 0,
   cliente: clienteDefaultValue,
   clienteId: '',
+  pessoa: pessoaDefaultValue,
+  pessoaId: '',
   status: '',
-  avatarColor: 'primary'
+  avatarColor: undefined,
+  dataVencimentoPrimeiraParcela: null, 
+  valorParcela: 0,
+  saldo: 0
 }
 
 export const appDespesaViewSlice = createSlice({

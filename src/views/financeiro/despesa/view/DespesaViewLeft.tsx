@@ -23,7 +23,8 @@ import CustomAvatar from 'src/@core/components/mui/avatar'
 // ** Types
 import { ThemeColor } from 'src/@core/layouts/types'
 import { DespesaType } from 'src/types/financeiro/despesa/despesaTypes'
-import { ClienteType } from 'src/types/negocios/comercial/cliente/clienteTypes'
+import { PessoaToAutoCompleteType } from 'src/types/sistema/pessoa/pessoaTypes'
+import { ClienteToAutoCompleteType } from 'src/types/negocios/comercial/cliente/clienteTypes'
 
 // ** Utils Import
 import { getInitials } from 'src/@core/utils/get-initials'
@@ -39,6 +40,8 @@ import { fetchDataById } from 'src/store/financeiro/despesa/view/index'
 import { AppDispatch, RootState } from 'src/store'
 import { useDispatch, useSelector } from 'react-redux'
 
+import moment from 'moment';
+
 interface ColorsType {
   [key: string]: ThemeColor
 }
@@ -52,26 +55,14 @@ interface Props {
   id: string
 }
 
-const clienteDefaultValue: ClienteType = {
+const pessoaDefaultValues: PessoaToAutoCompleteType = {
+  id: '',
+  nomeFantasia: ''
+}
+
+const clienteDefaultValues: ClienteToAutoCompleteType = {
   id: '',
   nomeFantasia: '',
-  razaoSocial: '',
-  inscricaoEstadual: '',
-  tipoPessoa: '',
-  cnpj: '',
-  cpf: '',
-  telefonePrincipal: '',
-  emailPrincipal: '',
-  observacao: '',
-  dataFundacao: '',
-  codigoMunicipio: 0,
-  rua: '',
-  numero: '',
-  complemento: '',
-  cidade: '',
-  estado: '',
-  cep: '',
-  status: ''
 }
 
 const defaultValues: DespesaType = {
@@ -79,7 +70,8 @@ const defaultValues: DespesaType = {
   formaPagamento: '',
   sistemaParcelamento: '',
   totalParcelas: 0,
-  dataOperacao: '',
+  dataOperacao: null,
+  dataVencimentoPrimeiraParcela: null,
   valorPrincipal: 0,
   iof: 0,
   seguro: 0,
@@ -89,8 +81,12 @@ const defaultValues: DespesaType = {
   custoEfetivoTotalDia: 0,
   valorEntrada: 0,
   valorParcelado: 0,
-  cliente: clienteDefaultValue,
+  valorParcela: 0,
   clienteId: '',
+  pessoaId: '',
+  pessoa: pessoaDefaultValues,
+  cliente: clienteDefaultValues,
+  saldo: 0,
   status: '',
   avatarColor: 'primary'
 }
@@ -134,7 +130,7 @@ const DespesaViewLeft = ({id}: Props) => {
           color={'primary' as ThemeColor}
           sx={{ width: 120, height: 120, fontWeight: 600, mb: 4, fontSize: '3rem' }}
         >
-          {getInitials(despesaView.cliente.nomeFantasia || "CP")}
+          {getInitials(despesaView.cliente.nomeFantasia|| "CP")}
         </CustomAvatar>
       )
     } else {
@@ -149,13 +145,13 @@ const DespesaViewLeft = ({id}: Props) => {
           <Card>
             <CardContent sx={{ pt: 15, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
               {renderClienteAvatar()}
-              <Typography variant='h6' sx={{ mb: 2 }}>
+              <Typography sx={{ mb: 2, textAlign: 'center', fontSize: '20px' }}>
                 {despesaView.cliente.nomeFantasia}
               </Typography>
               <CustomChip
                 skin='light'
                 size='small'
-                label={despesaView.cliente.razaoSocial || despesaView.cliente.nomeFantasia}
+                label={despesaView.cliente.nomeFantasia}
                 color='primary'
                 sx={{
                   height: 20,
@@ -178,7 +174,7 @@ const DespesaViewLeft = ({id}: Props) => {
                 </Box>
                 <Box sx={{ display: 'flex', mb: 2.7 }}>
                   <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Sistema parcelamento:</Typography>
-                  <Typography variant='body2'>{despesaView.seguro}</Typography>
+                  <Typography variant='body2'>{despesaView.sistemaParcelamento.replace("_", " ")}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', mb: 2.7 }}>
                   <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Total parcelas:</Typography>
@@ -186,7 +182,7 @@ const DespesaViewLeft = ({id}: Props) => {
                 </Box>
                 <Box sx={{ display: 'flex', mb: 2.7 }}>
                   <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Data operação:</Typography>
-                  <Typography variant='body2'>{despesaView.dataOperacao}</Typography>
+                  <Typography variant='body2'>{moment(despesaView.dataOperacao, 'DD/MM/YYYY HH:mm:ss Z').startOf('day').format('DD/MM/YYYY')}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', mb: 2.7 }}>
                   <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Valor principal:</Typography>
@@ -225,6 +221,14 @@ const DespesaViewLeft = ({id}: Props) => {
                   <Typography variant='body2'>{formatCurrency(despesaView.valorParcelado)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', mb: 2.7 }}>
+                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Valor parcela:</Typography>
+                  <Typography variant='body2'>{despesaView.valorParcela}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', mb: 2.7 }}>
+                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Data vencimento primeira parcela:</Typography>
+                  <Typography variant='body2'>{moment(despesaView.dataVencimentoPrimeiraParcela, 'DD/MM/YYYY HH:mm:ss Z').startOf('day').format('DD/MM/YYYY')}</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', mb: 2.7 }}>
                   <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Status:</Typography>
                   <CustomChip
                     skin='light'
@@ -251,7 +255,7 @@ const DespesaViewLeft = ({id}: Props) => {
       <Grid container spacing={6}>
         <Grid item xs={12}>
           <Alert severity='error'>
-            `Cliente com o id: ${id} não existe`
+            `Despesa com o id: ${id} não existe`
             <Link href='/pages/financeiro/despesa/list'>Listagem das despesas dos clientes</Link>
           </Alert>
         </Grid>

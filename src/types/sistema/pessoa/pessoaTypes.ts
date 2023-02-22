@@ -13,3 +13,8 @@ export type PessoaType = {
   status: string
   avatarColor?: ThemeColor
 }
+
+export type PessoaToAutoCompleteType = {
+  id: string
+  nomeFantasia: string
+}

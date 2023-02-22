@@ -28,3 +28,8 @@ export type ClienteType = {
   status: string
   avatarColor?: ThemeColor
 }
+
+export type ClienteToAutoCompleteType = {
+  id: string
+  nomeFantasia: string
+}

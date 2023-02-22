@@ -1,7 +1,7 @@
 // ** Types
 import { ThemeColor } from 'src/@core/layouts/types'
-import { ClienteType } from 'src/types/negocios/comercial/cliente/clienteTypes'
-import { PessoaType } from 'src/types/sistema/pessoa/pessoaTypes'
+import { ClienteToAutoCompleteType } from 'src/types/negocios/comercial/cliente/clienteTypes'
+import { PessoaToAutoCompleteType } from 'src/types/sistema/pessoa/pessoaTypes'
 
 export type DespesaLayoutType = {
   id: string
@@ -9,12 +9,11 @@ export type DespesaLayoutType = {
 
 export type DespesaType = {
   id?: string
-  tipoPessoa: string
   formaPagamento: string
   sistemaParcelamento: string
   totalParcelas: number
-  dataOperacao: string
-  dataVencimentoPrimeiraParcela: string
+  dataOperacao: string | null
+  dataVencimentoPrimeiraParcela: string | null
   valorPrincipal: number
   iof: number
   seguro: number
@@ -24,10 +23,12 @@ export type DespesaType = {
   custoEfetivoTotalDia: number
   valorEntrada: number
   valorParcelado: number
+  valorParcela: number
   clienteId: string
   pessoaId: string
-  pessoa: PessoaType
-  cliente: ClienteType
+  pessoa: PessoaToAutoCompleteType
+  cliente: ClienteToAutoCompleteType
+  saldo: number
   status: string
   avatarColor?: ThemeColor
 }
